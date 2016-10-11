@@ -72,13 +72,12 @@ public class MainActivity extends AppCompatActivity {
             ConnectionURL = "jdbc:jtds:sqlserver://" + server + ";" + "databaseName=" + database + ";user=" + user + ";password=" + password + ";"; //Create a connection url for the DriverManager to use
             connection = DriverManager.getConnection(ConnectionURL);
         } catch (SQLException e) {            //Catch Connection Errors
-            Log.e("ERROR", e.getMessage());
+            Log.e("ERROR", e.getMessage()+" SQLException");
         } catch (ClassNotFoundException e) {
-            Log.e("ERROR", e.getMessage());
+            Log.e("ERROR", e.getMessage()+" ClassNotFoundException");
         } catch (Exception e) {
-            Log.e("ERROR", e.getMessage());
+            Log.e("ERROR", e.getMessage()+" other Exception");
         }
-        Log.i("INFORMATION:", "CONNECTION SUCCESSFUL");
         return connection;
     }
 }
