@@ -1,10 +1,15 @@
 package com.yafengxiong.fblamobileapp;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,41 +23,42 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-    //Declare variables for MySQL Database Connection
-    Connection connect;
-    Context context;
-    PreparedStatement preparedStatement;
-    Statement st;
-    String ipaddress, db, username, password;
+public class MainActivity extends ActionBarActivity {
+
+    private GridView gridView;
+    private GridViewAdapter gridAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ipaddress = "juandomain.comli.com";
-        username = "a1797485_user";
-        password = "chispas1";
-        connect = ConnectionHelper(username, password, db, ipaddress); //Create a connection to the MySQL Database
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        GridView gridView = (GridView) findViewById(R.id.gridView); //
-        gridView.setAdapter(new ImageAdapter(this));
+        gridView = (GridView) findViewById(R.id.gridView);
+        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
+        gridView.setAdapter(gridAdapter);
         gridView.setOnItemClickListener(new OnItemClickListener(){
             public void onItemClick(AdapterView<?> parent, View v, int position, long id){
-                //Do Something onClick
+                ImageItem item = (ImageItem) parent.getItemAtPosition(position);
+                //Create the intent to open the image
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("title", item.getTitle());
+                intent.putExtra("image", item.getImage());
+                //Start the activity
+                startActivity(intent);
             }
         });
+    }
 
-       /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+    private ArrayList<ImageItem> getData(){
+        final ArrayList<ImageItem> imageItems = new ArrayList<>();
+        TypedArray imgs = getResources().obtainTypedArray(R.array.image_ids);
+        for(int i = 0; i < imgs.length(); i++){
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imgs.getResourceId(i, -1));
+            imageItems.add(new ImageItem(bitmap, "Image#" + i));
+        }
+        return imageItems;
     }
 
 
@@ -61,23 +67,5 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-    private Connection ConnectionHelper(String user, String password, String database, String server) { //Database Connection Method
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build(); //Set and build the ThreadPolicy
-        StrictMode.setThreadPolicy(policy);
-        //Declare a connection and connectionURL
-        Connection connection = null;
-        String ConnectionURL;
-        try {
-            Class.forName("net.sourcefoge.jtds.jdbc.Driver");
-            ConnectionURL = "jdbc:jtds:sqlserver://" + server + ";" + "databaseName=" + database + ";user=" + user + ";password=" + password + ";"; //Create a connection url for the DriverManager to use
-            connection = DriverManager.getConnection(ConnectionURL);
-        } catch (SQLException e) {            //Catch Connection Errors
-            Log.e("ERROR", e.getMessage()+" SQLException");
-        } catch (ClassNotFoundException e) {
-            Log.e("ERROR", e.getMessage()+" ClassNotFoundException");
-        } catch (Exception e) {
-            Log.e("ERROR", e.getMessage()+" other Exception");
-        }
-        return connection;
-    }
+
 }
